@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CineAI</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#0a0a0a; color:#fff; font-family:sans-serif; }
+    nav { background:#111; padding:16px 40px; display:flex; align-items:center; gap:20px; }
+    nav h1 { color:#e8b923; font-size:24px; }
+    .hero { padding:60px 40px; background:linear-gradient(135deg,#1a1a2e,#0a0a0a); }
+    .hero h2 { font-size:42px; margin-bottom:10px; }
+    .hero p { color:#aaa; font-size:16px; margin-bottom:24px; }
+    .search-box { display:flex; gap:10px; max-width:500px; }
+    .search-box input { flex:1; padding:12px 16px; border-radius:8px; border:1px solid #333; background:#1a1a1a; color:#fff; font-size:14px; outline:none; }
+    .search-box button { padding:12px 24px; background:#e8b923; color:#000; border:none; border-radius:8px; font-weight:700; cursor:pointer; }
+    .section { padding:30px 40px; }
+    .section h3 { color:#e8b923; letter-spacing:2px; font-size:13px; margin-bottom:20px; }
+    .movies-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px; }
+    .card { background:#1a1a1a; border-radius:12px; overflow:hidden; cursor:pointer; transition:transform 0.2s; border:1px solid #222; }
+    .card:hover { transform:scale(1.05); }
+    .card-img { width:100%; height:200px; background:linear-gradient(135deg,#1a3a5c,#2d1b4e); display:flex; align-items:center; justify-content:center; font-size:40px; }
+    .card-body { padding:12px; }
+    .card-title { font-weight:700; font-size:14px; margin-bottom:4px; }
+    .card-genre { color:#e8b923; font-size:11px; letter-spacing:1px; }
+    .result-box { background:#1a1a1a; border-radius:12px; padding:20px; margin-top:16px; display:none; }
+    .result-box h4 { color:#e8b923; margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>CINE<span style="color:#fff">AI</span></h1>
+    <span style="color:#aaa">Movie Recommendation System</span>
+  </nav>
+
+  <div class="hero">
+    <h2>Find Your Next Favourite Movie 🎬</h2>
+    <p>Enter a user ID (1-5) to get personalised recommendations</p>
+    <div class="search-box">
+      <input type="number" id="userId" placeholder="Enter User ID (1-5)" min="1" max="5" />
+      <button onclick="getRecommendations()">Recommend</button>
+    </div>
+    <div class="result-box" id="results">
+      <h4>Recommended For You</h4>
+      <div class="movies-grid" id="rec-grid"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>🎬 ALL MOVIES</h3>
+    <div class="movies-grid" id="movies-grid"></div>
+  </div>
+
+  <script>
+    const emojis = {"Action":"⚔️","Sci-Fi":"🚀","Drama":"🎭","Horror":"👻","Romance":"❤️","Animation":"✨","Comedy":"😂","Thriller":"🔪","Crime":"🕵️","Mystery":"🔍","Music":"🎵","Family":"👨‍👩‍👧"};
+
+    function getEmoji(genres) {
+      if (!genres) return "🎬";
+      const g = genres.split("|")[0];
+      return emojis[g] || "🎬";
+    }
+
+    function makeCard(movie) {
+      return `<div class="card">
+        <div class="card-img">${getEmoji(movie.genres)}</div>
+        <div class="card-body">
+          <div class="card-title">${movie.title}</div>
+          <div class="card-genre">${movie.genres || ''}</div>
+        </div>
+      </div>`;
+    }
+
+    async function loadMovies() {
+      const res = await fetch('/movies');
+      const movies = await res.json();
+      document.getElementById('movies-grid').innerHTML = movies.map(makeCard).join('');
+    }
+
+    async function getRecommendations() {
+      const userId = document.getElementById('userId').value;
+      if (!userId) return alert('Please enter a user ID!');
+      const res = await fetch(`/recommend/user/${userId}`);
+      const movies = await res.json();
+      document.getElementById('rec-grid').innerHTML = movies.map(makeCard).join('');
+      document.getElementById('results').style.display = 'block';
+    }
+
+    loadMovies();
+  </script>
+</body>
+</html>

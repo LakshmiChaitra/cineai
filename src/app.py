@@ -2,10 +2,10 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from recommender import HybridRecommender
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 engine = HybridRecommender(
@@ -16,7 +16,7 @@ engine.train()
 
 @app.route('/')
 def home():
-    return jsonify({"message": "CineAI is running!"})
+    return render_template('index.html')
 
 @app.route('/movies')
 def list_movies():
@@ -36,4 +36,5 @@ def recommend_movie(movie_id):
     return jsonify(recs[['movieId', 'title', 'similarity_score']].to_dict('records'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
